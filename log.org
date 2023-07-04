@@ -1,0 +1,58 @@
+* Search in Bard, chatGPT
+#+begin_src text
+	  What is the process that Peter Norvig employed to collect spelling correction dataset from wikipedia? Explain each step, with code & example if possible.
+#+end_src
+
+
+#+begin_src python
+ import re
+import requests
+
+def download_bangla_wikipedia_dump():
+    """Downloads the entire Bangla Wikipedia dump as a compressed file."""
+    url = "https://dumps.wikimedia.org/bnwiki/latest/bnwiki-latest-pages-articles.xml.bz2"
+    response = requests.get(url)
+    with open("bangla_wikipedia.bz2", "wb") as f:
+        f.write(response.content)
+
+def tokenize_bangla_text(text):
+    """Splits the Bangla text into individual words."""
+    return re.findall(r"\w+", text)
+
+def remove_bangla_stop_words(words):
+    """Removes Bangla stop words from the list of words."""
+    bangla_stop_words = ["এর", "এটি", "সেই", "তাদের", "আমার", "তোমার", "তাঁর", "এটা", "সে"]
+    return [w for w in words if w not in bangla_stop_words]
+
+def create_bangla_word_list(articles):
+    """Creates a list of all unique words in the Bangla corpus."""
+    bangla_word_list = set()
+    for article in articles:
+        for word in tokenize_bangla_text(article):
+            bangla_word_list.add(word)
+    return bangla_word_list
+
+def find_bangla_misspellings(word):
+    """Finds all of the misspellings of a given Bangla word."""
+    bangla_misspellings = []
+    for i in range(len(word)):
+        for j in range(i + 1, len(word) + 1):
+            bangla_misspelling = word[:i] + "".join(list(reversed(word[i:j]))) + word[j:]
+            if bangla_misspelling in bangla_word_list:
+                bangla_misspellings.append(bangla_misspelling)
+    return bangla_misspellings
+
+def main():
+    download_bangla_wikipedia_dump()
+    with open("bangla_wikipedia.bz2", "rb") as f:
+        articles = f.read().decode("utf-8")
+    bangla_word_list = create_bangla_word_list(articles)
+    for word in bangla_word_list:
+        bangla_misspellings = find_bangla_misspellings(word)
+        with open("bangla_misspellings.txt", "a") as f:
+            f.write(word + "\t" + ",".join(bangla_misspellings) + "\n")
+
+if __name__ == "__main__":
+    main()
+ 
+#+end_src

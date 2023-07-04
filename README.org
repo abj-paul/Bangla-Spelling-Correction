@@ -1,0 +1,7 @@
+* About
+Bangla Spelling Correction task has many problems.
+1. The datasets available are curated and artifical. They are not natural. And so their performance is also questionable.
+2. Deep Learning based approaches are not really practical for mobile devices.
+
+
+In this project, we wish to address these issues.
